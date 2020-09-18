@@ -22,16 +22,16 @@ class App extends Component {
         <GitHubCorner url={'https://github.com/netlify-labs/netlify-functions-express'} />
         <header className="App-header">
 
-          <div className="logo-wrapper">
+          {/* <div className="logo-wrapper">
             <img src={netlifyLogo} className="netlify-logo" alt="logo" />
             <span className='and'>+</span>
             <img src={expressLogo} className="express-logo" alt="logo" />
 
-          </div>
-          <h1 className="App-title">How to use express.js with Netlify functions</h1>
+          </div> */}
+          <h1 className="App-title">Барсбаатар туршиж байна ...</h1>
         </header>
 
-        <p className="App-intro">
+        {/* <p className="App-intro">
           <h2>Choose an example</h2>
         </p>
 
@@ -45,7 +45,7 @@ class App extends Component {
           <a className='link' href="/.netlify/functions/react-express-ssr">
             Example using React serverside rendering
           </a>
-        </div>
+        </div> */}
       </div>
     )
   }
