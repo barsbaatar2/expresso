@@ -5,94 +5,58 @@ import morgan from 'morgan'
 import bodyParser from 'body-parser'
 import compression from 'compression'
 import customLogger from '../utils/logger'
+const mysql = require('mysql');
+const db = mysql.createConnection ({
+  host: "remotemysql.com",
+  user: "YlO55imx4W",
+  password: "xe5gPs4pNo",
+  database: "YlO55imx4W"
+});
 
 /* My express App */
 export default function expressApp(functionName) {
   const app = express()
   const router = express.Router()
 
-  // gzip responses
+  db.connect((err) => {
+    if (err) {console.log('Error connected to database' + err);}
+    console.log('Connected to database');
+  });
+  global.db = db;
+
   router.use(compression())
-
-  // Set router base path for local dev
-  const routerBasePath = process.env.NODE_ENV === 'dev' ? `/${functionName}` : `/.netlify/functions/${functionName}/`
-
-  /* define routes */
-  router.get('/', (req, res) => {
-    const html = `
-    <html>
-      <head>
-        <style>
-          body {
-            padding: 30px;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>Express via '${functionName}' ⊂◉‿◉つ</h1>
-
-        <p>I'm using Express running via a <a href='https://www.netlify.com/docs/functions/' target='_blank'>Netlify Function</a>.</p>
-
-        <p>Choose a route:</p>
-
-        <div>
-          <a href='/.netlify/functions/${functionName}/users'>View /users route</a>
-        </div>
-
-        <div>
-          <a href='/.netlify/functions/${functionName}/hello'>View /hello route</a>
-        </div>
-
-        <br/>
-        <br/>
-
-        <div>
-          <a href='/'>
-            Go back to demo homepage
-          </a>
-        </div>
-
-        <br/>
-        <br/>
-
-        <div>
-          <a href='https://github.com/DavidWells/netlify-functions-express' target='_blank'>
-            See the source code on github
-          </a>
-        </div>
-      </body>
-    </html>
-  `
-    res.send(html)
-  })
-
-  router.get('/users', (req, res) => {
-    res.json({
-      users: [
-        {
-          name: 'barsbaatar',
-        },
-        {
-          name: 'barsaa',
-        },
-      ],
-    })
-  })
-
-  router.get('/hello/', function(req, res) {
-    res.send('hello world')
-  })
-
-  // Attach logger
-  app.use(morgan(customLogger))
-
-  // Setup routes
-  app.use(routerBasePath, router)
-
-  // Apply express middlewares
   router.use(cors())
   router.use(bodyParser.json())
   router.use(bodyParser.urlencoded({ extended: true }))
+
+  const routerBasePath = process.env.NODE_ENV === 'dev' ? `/${functionName}` : `/.netlify/functions/${functionName}/`
+
+  app.use(morgan(customLogger))
+  app.use(express.json());
+  app.use(routerBasePath, router)
+
+  router.get('/users', (req, res) => {
+    let query = `SELECT * FROM users`;
+    let resulty;
+    
+    db.query(query, (err, result) => {
+      if (err) { res.redirect('/'); }
+      console.log(JSON.stringify(result))
+      resulty=result[0];
+      res.json({
+        user: resulty,
+      })
+    })
+  })
+
+  router.post('/users', (req, res) => {
+    let query = `INSERT INTO users (username, password, age, type) VALUES ('${req.body.username}', '${req.body.password}', '${req.body.age}', '${req.body.type}');`;
+    // res.send(query)
+    db.query(query, (err, result) => {
+      if (err) { res.redirect('/'); }
+      res.send(result)
+    })
+  })
 
   return app
 }
